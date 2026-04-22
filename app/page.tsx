@@ -1,33 +1,36 @@
-import Link from 'next/link';
-import { SubdomainForm } from './subdomain-form';
-import { rootDomain } from '@/lib/utils';
-
-export default async function HomePage() {
+export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-white p-4 relative">
-      <div className="absolute top-4 right-4">
-        <Link
-          href="/admin"
-          className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-        >
-          Admin
-        </Link>
-      </div>
-
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">
-            {rootDomain}
-          </h1>
-          <p className="mt-3 text-lg text-gray-600">
-            Create your own subdomain with a custom emoji
-          </p>
-        </div>
-
-        <div className="mt-8 bg-white shadow-md rounded-lg p-6">
-          <SubdomainForm />
-        </div>
-      </div>
-    </div>
-  );
+    <main style={{
+      backgroundColor: '#0c0b09',
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: 'sans-serif',
+      color: 'white',
+      textAlign: 'center',
+      padding: '20px'
+    }}>
+      <h1 style={{ fontSize: '3rem', marginBottom: '20px' }}>
+        Face<span style={{ color: '#e8856a' }}>tify</span>
+      </h1>
+      <p style={{ fontSize: '1.2rem', color: '#8a7e74', maxWidth: '500px' }}>
+        Débarrasse-toi de ton acné en 30 jours grâce à une routine personnalisée
+      </p>
+      <button style={{
+        marginTop: '40px',
+        backgroundColor: '#e8856a',
+        color: 'white',
+        padding: '16px 40px',
+        borderRadius: '50px',
+        border: 'none',
+        fontSize: '1rem',
+        fontWeight: 'bold',
+        cursor: 'pointer'
+      }}>
+        Commencer gratuitement →
+      </button>
+    </main>
+  )
 }
