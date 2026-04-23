@@ -9,16 +9,22 @@ export default function LoginPage() {
   const [message, setMessage] = useState('')
 
   const handleSubmit = async () => {
-    if (isLogin) {
-      const { error } = await signInWithEmail(email, password)
-      if (error) setMessage(error.message)
-      else setMessage('Connecté avec succès !')
+  if (isLogin) {
+    const { error } = await signInWithEmail(email, password)
+    if (error) {
+      setMessage(error.message)
     } else {
-      const { error } = await signUpWithEmail(email, password)
-      if (error) setMessage(error.message)
-      else setMessage('Compte créé ! Vérifie ton email.')
+      router.push('/dashboard')
+    }
+  } else {
+    const { error } = await signUpWithEmail(email, password)
+    if (error) {
+      setMessage(error.message)
+    } else {
+      router.push('/onboarding')
     }
   }
+}
 
   return (
     <main style={{
