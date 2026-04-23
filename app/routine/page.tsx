@@ -104,7 +104,7 @@ export default function RoutinePage() {
   }, [])
 
   if (loading) return (
-    <div style={{ background: '#0a0907', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontFamily: 'sans-serif', fontSize: '1rem', color: 'rgba(255,255,255,0.4)' }}>
+    <div style={{ background: '#0a0907', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif', fontSize: '1rem', color: 'rgba(255,255,255,0.4)' }}>
       Chargement de ta routine...
     </div>
   )
