@@ -1,200 +1,215 @@
 'use client'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 
 export default function Home() {
   const router = useRouter()
-  const [openFaq, setOpenFaq] = useState<number | null>(null)
+
+  useEffect(() => {
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal')
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible')
+          observer.unobserve(entry.target)
+        }
+      })
+    }, { threshold: 0.12 })
+    reveals.forEach(el => observer.observe(el))
+
+    // FAQ toggle
+    const faqBtns = document.querySelectorAll('.faq-question')
+    faqBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item')
+        const isOpen = item?.classList.contains('open')
+        document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'))
+        if (!isOpen) item?.classList.add('open')
+      })
+    })
+
+    // Navbar scroll
+    const nav = document.querySelector('nav')
+    const handleScroll = () => {
+      if (nav) {
+        if (window.scrollY > 60) {
+          nav.style.background = 'rgba(12,11,9,0.95)'
+          nav.style.backdropFilter = 'blur(12px)'
+          nav.style.borderBottom = '1px solid rgba(255,255,255,0.06)'
+        } else {
+          nav.style.background = ''
+          nav.style.backdropFilter = 'blur(8px)'
+          nav.style.borderBottom = ''
+        }
+      }
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
-        body { background: #0a0907; color: #f0ebe4; font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
-
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-        @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(1.3); } }
-
-        .a1{animation:fadeUp 0.7s 0.1s ease both;}
-        .a2{animation:fadeUp 0.7s 0.2s ease both;}
-        .a3{animation:fadeUp 0.7s 0.3s ease both;}
-        .a4{animation:fadeUp 0.7s 0.4s ease both;}
-        .a5{animation:fadeUp 0.7s 0.5s ease both;}
-
-        nav { position:fixed; top:0; left:0; right:0; z-index:100; padding:20px 5%; display:flex; align-items:center; justify-content:space-between; background:rgba(10,9,7,0.9); backdrop-filter:blur(12px); border-bottom:1px solid rgba(255,255,255,0.05); }
-
-        .nav-logo { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:0.04em; color:#f0ebe4; }
-        .nav-logo span { color:#e8856a; }
-
-        .btn-nav { background:#e8856a; color:#fff; padding:10px 24px; border-radius:4px; border:none; font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.88rem; cursor:pointer; letter-spacing:0.02em; transition:all 0.2s; }
-        .btn-nav:hover { background:#f0a088; transform:translateY(-1px); }
-
-        .hero { min-height:100vh; display:flex; flex-direction:column; justify-content:flex-end; padding:0 5% 80px; position:relative; overflow:hidden; }
-
-        .hero-bg { position:absolute; inset:0; background: radial-gradient(ellipse 60% 50% at 80% 20%, rgba(232,133,106,0.07) 0%, transparent 60%), radial-gradient(ellipse 40% 40% at 10% 80%, rgba(123,191,140,0.04) 0%, transparent 50%); pointer-events:none; }
-
-        .hero-year { position:absolute; top:120px; right:5%; font-size:0.75rem; color:rgba(255,255,255,0.2); font-weight:500; letter-spacing:0.1em; text-transform:uppercase; writing-mode:vertical-rl; }
-
-        .hero-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(5rem,14vw,14rem); line-height:0.9; letter-spacing:0.01em; color:#f0ebe4; margin-bottom:40px; }
-        .hero-title span { color:#e8856a; display:block; }
-
-        .hero-bottom { display:flex; align-items:flex-end; justify-content:space-between; gap:40px; flex-wrap:wrap; }
-
-        .hero-desc { max-width:420px; font-size:1rem; color:rgba(255,255,255,0.45); line-height:1.7; font-weight:300; }
-
-        .hero-cta-group { display:flex; flex-direction:column; align-items:flex-end; gap:12px; }
-
-        .btn-primary { display:inline-flex; align-items:center; gap:10px; background:#e8856a; color:#fff; padding:16px 36px; border-radius:4px; font-family:'DM Sans',sans-serif; font-weight:600; font-size:1rem; border:none; cursor:pointer; transition:all 0.25s; letter-spacing:0.02em; }
-        .btn-primary:hover { background:#f0a088; transform:translateY(-2px); box-shadow:0 12px 32px rgba(232,133,106,0.3); }
-
-        .btn-outline { display:inline-flex; align-items:center; gap:8px; background:transparent; color:rgba(255,255,255,0.5); padding:14px 28px; border-radius:4px; font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.9rem; border:1px solid rgba(255,255,255,0.1); cursor:pointer; transition:all 0.2s; }
-        .btn-outline:hover { border-color:rgba(255,255,255,0.25); color:#f0ebe4; }
-
-        .hero-trial { font-size:0.78rem; color:rgba(255,255,255,0.25); }
-        .hero-trial span { color:#7bbf8c; font-weight:600; }
-
-        .marquee-wrap { overflow:hidden; border-top:1px solid rgba(255,255,255,0.06); border-bottom:1px solid rgba(255,255,255,0.06); padding:18px 0; background:rgba(255,255,255,0.02); }
-        .marquee-track { display:flex; gap:0; animation:marquee 20s linear infinite; white-space:nowrap; }
-        .marquee-item { display:inline-flex; align-items:center; gap:20px; padding:0 32px; font-size:0.78rem; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.2); }
-        .marquee-dot { width:4px; height:4px; border-radius:50%; background:rgba(232,133,106,0.4); flex-shrink:0; }
-
-        .section { padding:clamp(80px,10vw,140px) 5%; }
-        .section-inner { max-width:1200px; margin:0 auto; }
-
-        .section-num { font-size:0.72rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:rgba(232,133,106,0.6); margin-bottom:16px; }
-
-        h2.big { font-family:'Bebas Neue',sans-serif; font-size:clamp(3rem,7vw,7rem); line-height:0.95; letter-spacing:0.02em; color:#f0ebe4; margin-bottom:56px; }
-
-        .steps-list { display:flex; flex-direction:column; gap:0; }
-        .step-item { display:grid; grid-template-columns:80px 1fr auto; gap:32px; align-items:start; padding:32px 0; border-bottom:1px solid rgba(255,255,255,0.06); }
-        .step-item:last-child { border-bottom:none; }
-        .step-num-big { font-family:'Bebas Neue',sans-serif; font-size:3.5rem; color:rgba(255,255,255,0.08); line-height:1; }
-        .step-content h3 { font-size:1.1rem; font-weight:600; color:#f0ebe4; margin-bottom:8px; }
-        .step-content p { font-size:0.88rem; color:rgba(255,255,255,0.4); line-height:1.7; max-width:480px; }
-        .step-icon { font-size:2rem; opacity:0.7; }
-
-        .benefits-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.06); }
-        .benefit-item { background:#0a0907; padding:36px 32px; transition:background 0.2s; }
-        .benefit-item:hover { background:rgba(255,255,255,0.02); }
-        .benefit-icon { font-size:1.8rem; margin-bottom:20px; }
-        .benefit-item h3 { font-size:1rem; font-weight:600; color:#f0ebe4; margin-bottom:10px; }
-        .benefit-item p { font-size:0.85rem; color:rgba(255,255,255,0.4); line-height:1.65; }
-
-        .testi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; }
-        .testi-item { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:32px; transition:border-color 0.2s; }
-        .testi-item:hover { border-color:rgba(232,133,106,0.2); }
-        .testi-quote-mark { font-family:'Bebas Neue',sans-serif; font-size:4rem; color:rgba(232,133,106,0.15); line-height:0.8; margin-bottom:0; }
-        .testi-text { font-size:0.92rem; color:rgba(255,255,255,0.7); line-height:1.7; margin-bottom:24px; font-style:italic; font-weight:300; }
-        .testi-author-name { font-weight:600; font-size:0.85rem; color:#f0ebe4; }
-        .testi-author-meta { font-size:0.75rem; color:rgba(255,255,255,0.3); margin-top:2px; }
-        .testi-badge { display:inline-flex; align-items:center; gap:4px; background:rgba(123,191,140,0.08); border:1px solid rgba(123,191,140,0.15); color:#7bbf8c; padding:3px 10px; border-radius:2px; font-size:0.7rem; font-weight:700; letter-spacing:0.06em; margin-left:auto; }
-
-        .pricing-card { border:1px solid rgba(232,133,106,0.2); background:rgba(232,133,106,0.03); padding:clamp(40px,5vw,60px); max-width:600px; margin:0 auto; position:relative; }
-        .pricing-card::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:200px; height:1px; background:linear-gradient(to right,transparent,rgba(232,133,106,0.5),transparent); }
-        .price-big { font-family:'Bebas Neue',sans-serif; font-size:8rem; line-height:1; letter-spacing:-0.02em; color:#f0ebe4; }
-        .price-sup { font-size:2.5rem; vertical-align:top; margin-top:16px; }
-        .price-per { font-size:1rem; color:rgba(255,255,255,0.3); font-family:'DM Sans',sans-serif; font-weight:300; }
-        .price-trial { color:#7bbf8c; font-weight:600; font-size:0.88rem; margin-top:8px; margin-bottom:40px; }
-        .price-features { list-style:none; display:flex; flex-direction:column; gap:14px; margin-bottom:40px; text-align:left; }
-        .price-features li { display:flex; align-items:center; gap:12px; font-size:0.9rem; color:rgba(255,255,255,0.7); }
-        .pf-check { width:22px; height:22px; border-radius:2px; background:rgba(123,191,140,0.1); border:1px solid rgba(123,191,140,0.2); display:flex; align-items:center; justify-content:center; color:#7bbf8c; font-size:0.7rem; flex-shrink:0; }
-
-        .faq-list { display:flex; flex-direction:column; max-width:800px; margin:0 auto; }
-        .faq-item { border-bottom:1px solid rgba(255,255,255,0.06); }
-        .faq-btn { width:100%; background:none; border:none; color:#f0ebe4; font-family:'DM Sans',sans-serif; font-size:1rem; font-weight:500; text-align:left; padding:24px 0; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:16px; transition:color 0.2s; }
-        .faq-btn:hover { color:#e8856a; }
-        .faq-chevron { width:28px; height:28px; border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:0.8rem; color:rgba(255,255,255,0.3); transition:all 0.25s; flex-shrink:0; }
-        .faq-item.open .faq-chevron { background:#e8856a; border-color:#e8856a; color:white; transform:rotate(180deg); }
-        .faq-answer { max-height:0; overflow:hidden; transition:max-height 0.35s ease; }
-        .faq-item.open .faq-answer { max-height:200px; }
-        .faq-answer p { padding:0 0 24px; color:rgba(255,255,255,0.4); font-size:0.92rem; line-height:1.75; }
-
-        .final-cta { text-align:center; padding:clamp(80px,10vw,140px) 5%; background:rgba(255,255,255,0.01); border-top:1px solid rgba(255,255,255,0.05); position:relative; overflow:hidden; }
-        .final-cta::before { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:600px; height:300px; background:radial-gradient(ellipse,rgba(232,133,106,0.07) 0%,transparent 70%); pointer-events:none; }
-
-        footer { padding:28px 5%; border-top:1px solid rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; }
-        .footer-logo { font-family:'Bebas Neue',sans-serif; font-size:1.3rem; letter-spacing:0.04em; color:#f0ebe4; }
-        .footer-logo span { color:#e8856a; }
-        .footer-links { display:flex; gap:24px; list-style:none; }
-        .footer-links a { font-size:0.8rem; color:rgba(255,255,255,0.25); text-decoration:none; transition:color 0.2s; }
-        .footer-links a:hover { color:rgba(255,255,255,0.6); }
-        .footer-copy { font-size:0.78rem; color:rgba(255,255,255,0.15); }
-
-        @media(max-width:640px) {
-          .hero-title { font-size:clamp(4rem,18vw,8rem); }
-          .hero-bottom { flex-direction:column; align-items:flex-start; }
-          .hero-cta-group { align-items:flex-start; }
-          .step-item { grid-template-columns:50px 1fr; }
-          .step-icon { display:none; }
-          nav .nav-links { display:none; }
+        :root {
+          --bg: #0c0b09; --surface: #141210; --surface2: #1c1916;
+          --border: rgba(255,255,255,0.07); --coral: #e8856a; --coral-light: #f0a088;
+          --cream: #f5ede3; --cream-dim: #c4b5a5; --text: #f0ebe4;
+          --text-muted: #8a7e74; --gold: #c9a96e; --green: #7bbf8c;
+          --radius: 16px; --radius-lg: 28px;
         }
+        html { scroll-behavior: smooth; }
+        body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 16px; line-height: 1.6; overflow-x: hidden; }
+        nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 18px 5%; display: flex; align-items: center; justify-content: space-between; background: linear-gradient(to bottom, rgba(12,11,9,0.95) 0%, transparent 100%); backdrop-filter: blur(8px); }
+        .logo { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--cream); letter-spacing: -0.02em; }
+        .logo span { color: var(--coral); }
+        .nav-links { display: flex; gap: 2rem; list-style: none; align-items: center; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--cream); }
+        .btn-nav { background: var(--coral); color: #fff !important; padding: 9px 22px; border-radius: 50px; font-weight: 600 !important; font-size: 0.88rem !important; transition: all 0.2s !important; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; }
+        .btn-nav:hover { background: var(--coral-light) !important; transform: translateY(-1px); }
+        .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 120px 5% 80px; position: relative; overflow: hidden; }
+        .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(232,133,106,0.12) 0%, transparent 60%), radial-gradient(ellipse 40% 40% at 80% 70%, rgba(123,191,140,0.06) 0%, transparent 50%); pointer-events: none; }
+        .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(232,133,106,0.12); border: 1px solid rgba(232,133,106,0.25); color: var(--coral-light); padding: 7px 18px; border-radius: 50px; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 28px; animation: fadeUp 0.6s ease both; }
+        .badge-dot { width: 6px; height: 6px; background: var(--coral); border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+        .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.8rem,7vw,5.5rem); font-weight: 900; line-height: 1.05; letter-spacing: -0.03em; color: var(--cream); max-width: 820px; animation: fadeUp 0.7s 0.1s ease both; }
+        .hero h1 em { font-style: italic; color: var(--coral); }
+        .hero-sub { font-size: clamp(1rem,2vw,1.2rem); color: var(--text-muted); max-width: 500px; margin: 24px auto 0; font-weight: 400; line-height: 1.7; animation: fadeUp 0.7s 0.2s ease both; }
+        .hero-cta { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-top: 40px; animation: fadeUp 0.7s 0.3s ease both; }
+        .btn-primary { display: inline-flex; align-items: center; gap: 10px; background: var(--coral); color: #fff; text-decoration: none; padding: 16px 34px; border-radius: 50px; font-weight: 600; font-size: 1rem; transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,133,106,0.35); border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+        .btn-primary:hover { background: var(--coral-light); transform: translateY(-2px); box-shadow: 0 14px 40px rgba(232,133,106,0.45); }
+        .btn-secondary { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--cream-dim); text-decoration: none; padding: 16px 28px; border-radius: 50px; font-weight: 500; font-size: 1rem; border: 1px solid var(--border); transition: all 0.2s; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+        .btn-secondary:hover { border-color: rgba(255,255,255,0.15); color: var(--cream); transform: translateY(-1px); }
+        .hero-guarantee { margin-top: 20px; font-size: 0.82rem; color: var(--text-muted); animation: fadeUp 0.7s 0.4s ease both; }
+        .hero-guarantee span { color: var(--green); font-weight: 600; }
+        .social-bar { padding: 24px 5%; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; gap: clamp(24px,4vw,64px); flex-wrap: wrap; }
+        .stat-item { text-align: center; }
+        .stat-num { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: var(--cream); }
+        .stat-label { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; margin-top: 2px; }
+        .stars { color: var(--gold); font-size: 1rem; letter-spacing: 2px; }
+        section { padding: clamp(60px,8vw,100px) 5%; }
+        .section-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--coral); margin-bottom: 14px; }
+        h2 { font-family: 'Playfair Display', serif; font-size: clamp(2rem,4.5vw,3.2rem); font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; color: var(--cream); }
+        .pain-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap: 16px; }
+        .pain-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; position: relative; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
+        .pain-card:hover { border-color: rgba(232,133,106,0.2); transform: translateY(-2px); }
+        .pain-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: linear-gradient(to bottom, var(--coral), transparent); }
+        .pain-icon { font-size: 1.8rem; margin-bottom: 14px; }
+        .pain-card h3 { font-size: 1rem; font-weight: 600; color: var(--cream); margin-bottom: 8px; }
+        .pain-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+        .solution { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .solution-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+        .check-list { list-style: none; margin-top: 32px; display: flex; flex-direction: column; gap: 14px; }
+        .check-list li { display: flex; align-items: flex-start; gap: 12px; font-size: 0.95rem; color: var(--text); }
+        .check-icon { width: 22px; height: 22px; background: rgba(123,191,140,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--green); font-size: 0.7rem; flex-shrink: 0; margin-top: 1px; }
+        .steps-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 20px; }
+        .step-card { text-align: center; padding: 36px 24px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); transition: border-color 0.2s, transform 0.2s; }
+        .step-card:hover { border-color: rgba(232,133,106,0.2); transform: translateY(-4px); }
+        .step-num { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 900; color: rgba(232,133,106,0.1); line-height: 1; margin-bottom: 14px; }
+        .step-icon { font-size: 2rem; margin-bottom: 16px; }
+        .step-card h3 { font-size: 1.05rem; font-weight: 600; color: var(--cream); margin-bottom: 10px; }
+        .step-card p { font-size: 0.88rem; color: var(--text-muted); line-height: 1.65; }
+        .benefits { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .benefits-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); gap: 20px; }
+        .benefit-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; transition: border-color 0.2s, transform 0.2s; }
+        .benefit-card:hover { border-color: rgba(232,133,106,0.2); transform: translateY(-3px); }
+        .benefit-icon-wrap { width: 52px; height: 52px; background: rgba(232,133,106,0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 20px; }
+        .benefit-card h3 { font-size: 1.05rem; font-weight: 600; color: var(--cream); margin-bottom: 10px; }
+        .benefit-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.65; }
+        .testi-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; }
+        .testi-quote { font-size: 3rem; font-family: 'Playfair Display', serif; color: rgba(232,133,106,0.2); line-height: 1; margin-bottom: -12px; }
+        .testi-text { font-size: 0.95rem; color: var(--text); line-height: 1.7; margin-bottom: 24px; }
+        .testi-name { font-weight: 600; font-size: 0.9rem; color: var(--cream); }
+        .testi-meta { font-size: 0.78rem; color: var(--text-muted); }
+        .testi-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(123,191,140,0.1); border: 1px solid rgba(123,191,140,0.2); color: var(--green); padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; margin-left: auto; }
+        .pricing { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .pricing-card { background: var(--bg); border: 1px solid rgba(232,133,106,0.3); border-radius: 32px; padding: 52px; max-width: 560px; margin: 0 auto; text-align: center; position: relative; overflow: hidden; box-shadow: 0 0 80px rgba(232,133,106,0.08); }
+        .pricing-card::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 200px; height: 1px; background: linear-gradient(to right, transparent, var(--coral), transparent); }
+        .pricing-tag { display: inline-flex; align-items: center; gap: 6px; background: rgba(232,133,106,0.12); border: 1px solid rgba(232,133,106,0.25); color: var(--coral-light); padding: 6px 16px; border-radius: 50px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 28px; }
+        .price-amount { font-family: 'Playfair Display', serif; font-size: 5rem; font-weight: 900; color: var(--cream); line-height: 1; letter-spacing: -0.04em; }
+        .price-trial { margin-top: 10px; font-size: 0.85rem; color: var(--green); font-weight: 600; }
+        .price-features { list-style: none; margin: 36px 0; text-align: left; display: flex; flex-direction: column; gap: 14px; }
+        .price-features li { display: flex; align-items: center; gap: 12px; font-size: 0.92rem; color: var(--text); }
+        .pf-icon { width: 24px; height: 24px; background: rgba(123,191,140,0.12); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--green); font-size: 0.75rem; flex-shrink: 0; }
+        .pricing-guarantee { margin-top: 20px; font-size: 0.82rem; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .faq-item { border-bottom: 1px solid var(--border); }
+        .faq-question { width: 100%; background: none; border: none; color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600; text-align: left; padding: 22px 0; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 16px; transition: color 0.2s; }
+        .faq-question:hover { color: var(--coral-light); }
+        .faq-chevron { width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0; transition: all 0.25s; }
+        .faq-item.open .faq-chevron { background: var(--coral); border-color: var(--coral); color: #fff; transform: rotate(180deg); }
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+        .faq-answer p { padding: 0 0 22px; color: var(--text-muted); font-size: 0.93rem; line-height: 1.7; }
+        .faq-item.open .faq-answer { max-height: 200px; }
+        .final-cta { text-align: center; background: var(--surface); border-top: 1px solid var(--border); position: relative; overflow: hidden; }
+        .final-cta-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 80% at 50% 100%, rgba(232,133,106,0.1) 0%, transparent 60%); pointer-events: none; }
+        footer { padding: 32px 5%; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+        .footer-links { display: flex; gap: 24px; list-style: none; }
+        .footer-links a { font-size: 0.83rem; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--cream); }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .reveal.visible { opacity: 1; transform: none; }
+        .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); gap: 20px; }
+        .testi-author { display: flex; align-items: center; gap: 12px; }
+        .testi-avatar { width: 42px; height: 42px; border-radius: 50%; font-size: 1.2rem; background: var(--surface2); display: flex; align-items: center; justify-content: center; border: 2px solid var(--border); }
+        @media(max-width:768px) { .nav-links{display:none;} .solution-inner{grid-template-columns:1fr;gap:48px;} .pricing-card{padding:36px 28px;} }
       `}</style>
       {/* NAV */}
       <nav>
-        <div className="nav-logo">Face<span>tify</span></div>
-        <div style={{display:'flex',gap:'20px',alignItems:'center'}}>
-          <a href="#how" style={{fontSize:'0.88rem',color:'rgba(255,255,255,0.4)',textDecoration:'none',fontWeight:500}}>Comment</a>
-          <a href="#pricing" style={{fontSize:'0.88rem',color:'rgba(255,255,255,0.4)',textDecoration:'none',fontWeight:500}}>Tarifs</a>
-          <button className="btn-nav" onClick={() => router.push('/login')}>Essai gratuit</button>
-        </div>
+        <div className="logo">Face<span>tify</span></div>
+        <ul className="nav-links">
+          <li><a href="#how">Comment ça marche</a></li>
+          <li><a href="#benefits">Bénéfices</a></li>
+          <li><a href="#pricing">Tarifs</a></li>
+          <li><button className="btn-nav" onClick={() => router.push('/login')}>Commencer gratuitement</button></li>
+        </ul>
       </nav>
 
       {/* HERO */}
       <section className="hero">
         <div className="hero-bg" />
-        <div className="hero-year">2024 — Skincare</div>
-        <div className="a1 hero-title">
-          Peau<span>Nette</span>
+        <div className="hero-badge"><span className="badge-dot" />Routine IA personnalisée</div>
+        <h1>Débarrasse-toi de ton acné<br />en <em>30 jours</em></h1>
+        <p className="hero-sub">Une routine skincare personnalisée selon ta peau. Simple, efficace, et sans te noyer dans un océan de produits.</p>
+        <div className="hero-cta">
+          <button className="btn-primary" onClick={() => router.push('/login')}>Commencer gratuitement →</button>
+          <a href="#how" className="btn-secondary">▶ Voir comment ça marche</a>
         </div>
-        <div className="hero-bottom">
-          <div>
-            <div className="a2" style={{display:'inline-flex',alignItems:'center',gap:'8px',background:'rgba(232,133,106,0.08)',border:'1px solid rgba(232,133,106,0.15)',color:'#e8856a',padding:'6px 16px',borderRadius:'2px',fontSize:'0.75rem',fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',marginBottom:'20px'}}>
-              <span style={{width:'5px',height:'5px',borderRadius:'50%',background:'#e8856a',animation:'pulse 2s infinite'}} />
-              Routine IA personnalisée
-            </div>
-            <p className="a3 hero-desc">
-              Débarrasse-toi de ton acné en 30 jours grâce à une routine skincare générée selon ton profil unique. Simple, efficace, sans te noyer dans les informations.
-            </p>
-          </div>
-          <div className="hero-cta-group a4">
-            <button className="btn-primary" onClick={() => router.push('/login')}>
-              Commencer gratuitement →
-            </button>
-            <p className="hero-trial"><span>✓ 7 jours gratuits</span> · Sans carte bancaire</p>
-          </div>
-        </div>
+        <p className="hero-guarantee"><span>✓ 7 jours gratuits</span> — Sans carte bancaire requise</p>
       </section>
 
-      {/* MARQUEE */}
-      <div className="marquee-wrap">
-        <div className="marquee-track">
-          {[...Array(2)].map((_, j) => (
-            ['Routine personnalisée','Acné réduite en 30 jours','Suivi photo','Streaks quotidiens','Peau nette','Badges & récompenses','Plan 30 jours','Rappels intelligents'].map((item, i) => (
-              <span key={`${j}-${i}`} className="marquee-item">
-                <span className="marquee-dot" />
-                {item}
-              </span>
-            ))
-          ))}
-        </div>
+      {/* SOCIAL PROOF */}
+      <div className="social-bar">
+        <div className="stat-item"><div className="stat-num">2 800+</div><div className="stat-label">Utilisateurs actifs</div></div>
+        <div className="stat-item"><div className="stars">★★★★★</div><div className="stat-label">4.9/5 · 340 avis</div></div>
+        <div className="stat-item"><div className="stat-num">78%</div><div className="stat-label">Résultats en 3 semaines</div></div>
+        <div className="stat-item"><div className="stat-num">30 jours</div><div className="stat-label">Pour une vraie transformation</div></div>
       </div>
 
-      {/* STATS */}
-      <section className="section" style={{paddingTop:'80px',paddingBottom:'80px'}}>
-        <div className="section-inner">
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:'40px'}}>
+      {/* PROBLEM */}
+      <section>
+        <div style={{maxWidth:'1100px',margin:'0 auto'}}>
+          <div style={{textAlign:'center',maxWidth:'680px',margin:'0 auto 60px'}} className="reveal">
+            <div className="section-label">Le problème</div>
+            <h2>Tu en as marre de chercher partout sans résultat ?</h2>
+            <p style={{marginTop:'18px',color:'var(--text-muted)',fontSize:'1.05rem',lineHeight:'1.7'}}>Des milliers de produits. Des conseils contradictoires. Des routines trop complexes. Et pourtant ton acné est toujours là.</p>
+          </div>
+          <div className="pain-grid">
             {[
-              {num:'2 800+',label:'Utilisateurs actifs'},
-              {num:'★★★★★',label:'4.9/5 · 340 avis'},
-              {num:'78%',label:'Résultats en 3 semaines'},
-              {num:'30j',label:'Programme complet'},
-            ].map((s,i) => (
-              <div key={i}>
-                <p style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:'3.5rem',color:'#f0ebe4',lineHeight:1,letterSpacing:'0.02em'}}>{s.num}</p>
-                <p style={{fontSize:'0.78rem',color:'rgba(255,255,255,0.3)',fontWeight:500,marginTop:'6px',letterSpacing:'0.04em',textTransform:'uppercase'}}>{s.label}</p>
+              {icon:'😵‍💫',title:'Trop d\'informations',desc:'YouTube, TikTok, Reddit... tout le monde donne un avis différent. Tu ne sais plus quoi croire.'},
+              {icon:'💸',title:'De l\'argent gaspillé',desc:'Tu achètes des produits qui ne marchent pas sur ta peau. Chaque nouvelle "solution miracle" déçoit.'},
+              {icon:'🔁',title:'Aucune régularité',desc:'Tu commences une routine, tu l\'oublies au bout de 3 jours. Sans suivi, impossible de voir des résultats.'},
+              {icon:'😔',title:'La confiance en soi qui baisse',desc:'L\'acné, c\'est visible. Ça affecte ta façon d\'interagir avec les autres au quotidien.'},
+              {icon:'🤷',title:'Pas adapté à TON type de peau',desc:'Une routine qui marche pour quelqu\'un d\'autre n\'est pas forcément faite pour toi.'},
+              {icon:'⏳',title:'Aucun suivi dans le temps',desc:'Sans tracker tes progrès, tu ne vois pas l\'évolution. Et sans résultats, tu abandonnes.'},
+            ].map((p,i) => (
+              <div key={i} className="pain-card reveal">
+                <div className="pain-icon">{p.icon}</div>
+                <h3>{p.title}</h3>
+                <p>{p.desc}</p>
               </div>
             ))}
           </div>
@@ -202,72 +217,76 @@ export default function Home() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="section" id="how" style={{borderTop:'1px solid rgba(255,255,255,0.05)'}}>
-        <div className="section-inner">
-          <p className="section-num">001 — Comment ça marche</p>
-          <h2 className="big">4 ÉTAPES<br/>30 JOURS</h2>
-          <div className="steps-list">
+      <section id="how">
+        <div style={{maxWidth:'1100px',margin:'0 auto'}}>
+          <div style={{textAlign:'center',maxWidth:'560px',margin:'0 auto 64px'}} className="reveal">
+            <div className="section-label">Comment ça marche</div>
+            <h2>De l'inscription aux résultats en 4 étapes</h2>
+          </div>
+          <div className="steps-grid">
             {[
-              {n:'01',icon:'🧪',title:'Diagnostic peau',desc:'8 questions sur ton type de peau, ton niveau d\'acné et tes habitudes de vie. 3 minutes max.'},
-              {n:'02',icon:'✨',title:'Routine générée',desc:'Ta routine matin/soir personnalisée est prête immédiatement. Les bons produits dans le bon ordre.'},
-              {n:'03',icon:'📅',title:'Suivi quotidien',desc:'Coche tes étapes chaque jour. Upload une photo par semaine. Reste motivé avec les streaks.'},
-              {n:'04',icon:'🎯',title:'Résultats visibles',desc:'En 2–3 semaines ta peau commence à changer. En 30 jours la transformation est mesurable.'},
-            ].map((step,i) => (
-              <div key={i} className="step-item">
-                <p className="step-num-big">{step.n}</p>
-                <div className="step-content">
-                  <h3>{step.title}</h3>
-                  <p>{step.desc}</p>
-                </div>
-                <span className="step-icon">{step.icon}</span>
+              {n:'01',icon:'🧪',title:'Diagnostic peau',desc:'Réponds à 8 questions sur ton type de peau, ton acné et tes habitudes. L\'algorithme fait le reste.'},
+              {n:'02',icon:'✨',title:'Routine générée',desc:'Reçois immédiatement ta routine matin/soir sur 30 jours, avec les bons produits dans le bon ordre.'},
+              {n:'03',icon:'📅',title:'Suivi quotidien',desc:'Coche tes étapes chaque jour. Upload une photo par semaine pour voir l\'évolution de ta peau.'},
+              {n:'04',icon:'🎯',title:'Résultats visibles',desc:'En 2–3 semaines, ta peau commence à changer. En 30 jours, la transformation est réelle et mesurable.'},
+            ].map((s,i) => (
+              <div key={i} className="step-card reveal">
+                <div className="step-num">{s.n}</div>
+                <div className="step-icon">{s.icon}</div>
+                <h3>{s.title}</h3>
+                <p>{s.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
+
       {/* BENEFITS */}
-      <section className="section" style={{borderTop:'1px solid rgba(255,255,255,0.05)',paddingBottom:'0'}}>
-        <div className="section-inner">
-          <p className="section-num">002 — Pourquoi Facetify</p>
-          <h2 className="big">TOUT CE<br/>DONT TU<br/>AS BESOIN</h2>
-        </div>
-        <div className="benefits-grid">
-          {[
-            {icon:'🎯',title:'100% personnalisé',desc:'Pas de routine générique. Calculée selon ton type de peau, acné, stress, sommeil et alimentation.'},
-            {icon:'📸',title:'Suivi photo',desc:'Upload une photo chaque semaine. Vois la progression réelle de ta peau côte à côte.'},
-            {icon:'🔔',title:'Rappels intelligents',desc:'Notifications aux heures que tu choisis. Tu n\'oublieras plus jamais ta routine du soir.'},
-            {icon:'🔥',title:'Streaks & Badges',desc:'Construis une habitude grâce aux streaks quotidiens. Plus c\'est régulier, plus c\'est efficace.'},
-            {icon:'📱',title:'Mobile-first',desc:'Utilisable dans ta salle de bain depuis ton téléphone. Rapide, simple, sans friction.'},
-            {icon:'💡',title:'Éducation incluse',desc:'Comprends pourquoi tu utilises chaque produit. Garde les bons réflexes à vie.'},
-          ].map((b,i) => (
-            <div key={i} className="benefit-item">
-              <div className="benefit-icon">{b.icon}</div>
-              <h3>{b.title}</h3>
-              <p>{b.desc}</p>
-            </div>
-          ))}
+      <section className="benefits" id="benefits">
+        <div style={{maxWidth:'1100px',margin:'0 auto'}}>
+          <div style={{textAlign:'center',maxWidth:'600px',margin:'0 auto 60px'}} className="reveal">
+            <div className="section-label">Pourquoi Facetify</div>
+            <h2>Tout ce dont tu as besoin, rien de plus</h2>
+          </div>
+          <div className="benefits-grid">
+            {[
+              {icon:'🎯',title:'100% personnalisé',desc:'Pas de copier-coller générique. Ta routine est calculée selon ton profil unique.'},
+              {icon:'📸',title:'Suivi photo intégré',desc:'Upload une photo chaque semaine. Vois la progression réelle de ta peau côte à côte.'},
+              {icon:'🔔',title:'Rappels intelligents',desc:'Des notifications aux heures que tu choisis. Tu n\'oublieras plus jamais ta routine du soir.'},
+              {icon:'🔥',title:'Streaks & Gamification',desc:'Construis une habitude grâce aux streaks, badges et récompenses.'},
+              {icon:'📱',title:'Mobile-first',desc:'Utilisable directement depuis ton téléphone, dans la salle de bain, en 2 secondes.'},
+              {icon:'💡',title:'Éducation incluse',desc:'Comprends pourquoi tu utilises chaque produit. Garde les bons réflexes à vie.'},
+            ].map((b,i) => (
+              <div key={i} className="benefit-card reveal">
+                <div className="benefit-icon-wrap">{b.icon}</div>
+                <h3>{b.title}</h3>
+                <p>{b.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
-
       {/* TESTIMONIALS */}
-      <section className="section" style={{borderTop:'1px solid rgba(255,255,255,0.05)'}}>
-        <div className="section-inner">
-          <p className="section-num">003 — Témoignages</p>
-          <h2 className="big">ILS ONT<br/>ESSAYÉ</h2>
-          <div className="testi-grid">
+      <section>
+        <div style={{maxWidth:'1100px',margin:'0 auto'}}>
+          <div style={{textAlign:'center',marginBottom:'56px'}} className="reveal">
+            <div className="section-label">Ils ont essayé</div>
+            <h2>Des vraies peaux, de vrais résultats</h2>
+          </div>
+          <div className="testimonials-grid">
             {[
               {text:"En 3 semaines mes boutons ont diminué de moitié. Je n'y croyais plus vraiment... et pourtant.",name:"Camille, 23 ans",meta:"Peau grasse · Acné modérée",day:"J.21"},
-              {text:"Facetify m'a enfin expliqué pourquoi mes anciens produits n'allaient pas. Tout a changé.",name:"Théo, 20 ans",meta:"Peau mixte · Acné sévère",day:"J.30"},
+              {text:"Facetify m'a enfin expliqué pourquoi mes anciens produits n'allaient pas pour ma peau. Tout a changé.",name:"Théo, 20 ans",meta:"Peau mixte · Acné sévère",day:"J.30"},
               {text:"Simple, rapide, efficace. En 5 minutes j'avais ma routine complète. Le suivi photo est incroyable.",name:"Léa, 26 ans",meta:"Peau sensible · Acné légère",day:"J.18"},
             ].map((t,i) => (
-              <div key={i} className="testi-item">
-                <div className="testi-quote-mark">"</div>
+              <div key={i} className="testi-card reveal">
+                <div className="testi-quote">"</div>
                 <p className="testi-text">{t.text}</p>
-                <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
-                  <div style={{width:'36px',height:'36px',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1rem'}}>👤</div>
-                  <div style={{flex:1}}>
-                    <p className="testi-author-name">{t.name}</p>
-                    <p className="testi-author-meta">{t.meta}</p>
+                <div className="testi-author">
+                  <div className="testi-avatar">👤</div>
+                  <div>
+                    <div className="testi-name">{t.name}</div>
+                    <div className="testi-meta">{t.meta}</div>
                   </div>
                   <div className="testi-badge">✓ {t.day}</div>
                 </div>
@@ -278,80 +297,82 @@ export default function Home() {
       </section>
 
       {/* PRICING */}
-      <section className="section" id="pricing" style={{borderTop:'1px solid rgba(255,255,255,0.05)'}}>
-        <div className="section-inner">
-          <p className="section-num" style={{textAlign:'center'}}>004 — Tarifs</p>
-          <h2 className="big" style={{textAlign:'center',marginBottom:'48px'}}>UN SEUL<br/>PLAN</h2>
-          <div className="pricing-card">
-            <div style={{display:'inline-flex',alignItems:'center',gap:'6px',background:'rgba(232,133,106,0.08)',border:'1px solid rgba(232,133,106,0.15)',color:'#e8856a',padding:'6px 16px',fontSize:'0.75rem',fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',marginBottom:'24px'}}>⚡ Offre de lancement</div>
-            <div style={{textAlign:'center'}}>
-              <div className="price-big"><sup className="price-sup">€</sup>10<span className="price-per">/mois</span></div>
-              <p className="price-trial">✦ 7 jours gratuits — Sans carte requise</p>
-            </div>
+      <section className="pricing" id="pricing">
+        <div style={{maxWidth:'900px',margin:'0 auto'}}>
+          <div style={{textAlign:'center',maxWidth:'560px',margin:'0 auto 56px'}} className="reveal">
+            <div className="section-label">Tarifs</div>
+            <h2>Un seul plan. Tout inclus.</h2>
+            <p style={{marginTop:'16px',color:'var(--text-muted)'}}>Moins cher qu'un seul produit en pharmacie.</p>
+          </div>
+          <div className="pricing-card reveal">
+            <div className="pricing-tag">⚡ Offre de lancement</div>
+            <div className="price-amount"><sup style={{fontSize:'2rem',verticalAlign:'top',marginTop:'14px'}}>€</sup>10<span style={{fontSize:'1.2rem',fontWeight:300,color:'var(--text-muted)'}}>/mois</span></div>
+            <div className="price-trial">✦ Sans carte requise pour démarrer</div>
             <ul className="price-features">
-              {['Diagnostic peau complet','Routine matin + soir personnalisée','Plan progressif 30 jours','Suivi photo hebdomadaire','Streaks & gamification','Rappels quotidiens','Résiliable à tout moment'].map((f,i) => (
-                <li key={i}><span className="pf-check">✓</span>{f}</li>
+              {['Diagnostic peau complet','Routine matin + soir personnalisée','Plan progressif sur 30 jours','Suivi photo hebdomadaire','Streaks & gamification','Rappels quotidiens','Résiliable à tout moment'].map((f,i) => (
+                <li key={i}><span className="pf-icon">✓</span>{f}</li>
               ))}
             </ul>
             <button className="btn-primary" style={{width:'100%',justifyContent:'center',fontSize:'1.05rem',padding:'18px'}} onClick={() => router.push('/login')}>
-              Commencer mon essai gratuit →
+              Commencer maintenant →
             </button>
-            <p style={{textAlign:'center',fontSize:'0.78rem',color:'rgba(255,255,255,0.2)',marginTop:'16px'}}>
-              🔒 Satisfait ou remboursé 7 jours · Annulation en 1 clic
-            </p>
+            <div className="pricing-guarantee">🔒 Annulation en 1 clic · Satisfait ou remboursé</div>
           </div>
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="section" style={{borderTop:'1px solid rgba(255,255,255,0.05)'}}>
-        <div className="section-inner">
-          <p className="section-num" style={{textAlign:'center'}}>005 — FAQ</p>
-          <h2 className="big" style={{textAlign:'center',marginBottom:'56px'}}>QUESTIONS</h2>
-          <div className="faq-list">
-            {[
-              {q:"Est-ce que ça marche vraiment en 30 jours ?",a:"78% de nos utilisateurs voient des résultats entre J.14 et J.21. En 30 jours la transformation est réelle. La régularité est la clé."},
-              {q:"Je dois acheter de nouveaux produits ?",a:"Non. Facetify s'adapte à ce que tu as déjà. Les recommandations sont accessibles (moins de 15€ en pharmacie)."},
-              {q:"L'essai gratuit nécessite une carte bancaire ?",a:"Non. 7 jours gratuits sans aucun moyen de paiement. Tu choisis ensuite si tu continues à 10€/mois."},
-              {q:"Puis-je annuler à tout moment ?",a:"Oui. Annulation en 1 clic depuis ton dashboard. Pas de formulaire, pas de service client."},
-              {q:"Ça marche pour l'acné sévère ?",a:"Facetify est optimisé pour l'acné légère à modérée. Pour l'acné sévère, consulte un dermatologue en parallèle."},
-            ].map((item,i) => (
-              <div key={i} className={`faq-item ${openFaq === i ? 'open' : ''}`}>
-                <button className="faq-btn" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
-                  {item.q}
-                  <span className="faq-chevron">▾</span>
-                </button>
-                <div className="faq-answer"><p>{item.a}</p></div>
-              </div>
-            ))}
+      <section>
+        <div style={{maxWidth:'720px',margin:'0 auto'}}>
+          <div style={{textAlign:'center',marginBottom:'52px'}} className="reveal">
+            <div className="section-label">FAQ</div>
+            <h2>Questions fréquentes</h2>
           </div>
+          {[
+            {q:"Est-ce que ça marche vraiment en 30 jours ?",a:"78% de nos utilisateurs voient des résultats entre J.14 et J.21. En 30 jours la transformation est réelle. La régularité est la clé."},
+            {q:"Je dois acheter de nouveaux produits ?",a:"Non. Facetify s'adapte à ce que tu as déjà. Les recommandations sont accessibles en pharmacie (moins de 15€)."},
+            {q:"L'essai gratuit nécessite une carte bancaire ?",a:"Non. Tu peux démarrer sans aucun moyen de paiement. Tu choisis ensuite si tu continues à 10€/mois."},
+            {q:"Puis-je annuler à tout moment ?",a:"Oui. Annulation en 1 clic depuis ton dashboard. Pas de formulaire, pas de service client."},
+            {q:"Ça marche pour l'acné sévère ?",a:"Facetify est optimisé pour l'acné légère à modérée. Pour l'acné sévère, consulte un dermatologue en parallèle."},
+          ].map((item,i) => (
+            <div key={i} className="faq-item">
+              <button className="faq-question">
+                {item.q}
+                <span className="faq-chevron">▾</span>
+              </button>
+              <div className="faq-answer"><p>{item.a}</p></div>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* FINAL CTA */}
       <section className="final-cta">
-        <p style={{fontSize:'0.72rem',fontWeight:700,letterSpacing:'0.12em',textTransform:'uppercase',color:'rgba(232,133,106,0.6)',marginBottom:'16px'}}>Prêt(e) ?</p>
-        <h2 style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:'clamp(3.5rem,9vw,9rem)',lineHeight:0.9,letterSpacing:'0.02em',color:'#f0ebe4',marginBottom:'32px'}}>
-          TA MEILLEURE<br/><span style={{color:'#e8856a'}}>PEAU</span>
+        <div className="final-cta-bg" />
+        <div className="section-label" style={{textAlign:'center'}}>Prêt(e) ?</div>
+        <h2 style={{fontSize:'clamp(2rem,5vw,3.6rem)',maxWidth:'720px',margin:'0 auto 20px'}} className="reveal">
+          Ta meilleure peau commence <em style={{color:'var(--coral)',fontStyle:'italic'}}>aujourd'hui</em>
         </h2>
-        <p style={{color:'rgba(255,255,255,0.3)',fontSize:'1rem',maxWidth:'400px',margin:'0 auto 40px',lineHeight:1.7}}>
+        <p style={{color:'var(--text-muted)',fontSize:'1.05rem',maxWidth:'480px',margin:'0 auto 40px'}} className="reveal">
           Rejoins 2 800+ personnes qui ont repris confiance en leur peau.
         </p>
-        <button className="btn-primary" style={{fontSize:'1.05rem',padding:'18px 48px'}} onClick={() => router.push('/login')}>
-          Démarrer mon essai gratuit →
+        <button className="btn-primary reveal" style={{fontSize:'1.1rem',padding:'18px 44px'}} onClick={() => router.push('/login')}>
+          Démarrer maintenant →
         </button>
-        <p style={{fontSize:'0.8rem',color:'rgba(255,255,255,0.2)',marginTop:'16px'}}>
-          <span style={{color:'rgba(123,191,140,0.7)',fontWeight:600}}>✓ Sans carte bancaire</span> · Résiliable à tout moment
+        <p className="hero-guarantee reveal" style={{marginTop:'18px'}}>
+          <span>✓ Sans carte bancaire</span> · <span style={{color:'var(--green)',fontWeight:600}}>✓ Résiliable à tout moment</span>
         </p>
       </section>
 
       {/* FOOTER */}
       <footer>
-        <div className="footer-logo">Face<span>tify</span></div>
+        <div className="logo">Face<span>tify</span></div>
         <ul className="footer-links">
-          {['CGU','Confidentialité','Contact'].map(l => <li key={l}><a href="#">{l}</a></li>)}
+          <li><a href="#">CGU</a></li>
+          <li><a href="#">Confidentialité</a></li>
+          <li><a href="#">Contact</a></li>
         </ul>
-        <p className="footer-copy">© 2024 Facetify</p>
+        <p style={{fontSize:'0.8rem',color:'var(--text-muted)'}}>© 2024 Facetify</p>
       </footer>
     </>
   )
