@@ -557,7 +557,7 @@ export default function DashboardPage() {
             { icon: '🏠', label: 'Accueil', active: true, action: () => {} },
             { icon: '📋', label: 'Routine', active: false, action: () => router.push('/routine') },
             { icon: '📸', label: 'Progrès', active: false, action: () => router.push('/progress') },
-            { icon: '👤', label: 'Profil', active: false, action: handleSignOut },
+           { icon: '👤', label: 'Profil', active: false, action: () => router.push('/profile') },
           ].map((item, i) => (
             <div key={i} className={`nav-item ${item.active ? 'active' : ''}`} onClick={item.action}>
               <span className="nav-icon">{item.icon}</span>
