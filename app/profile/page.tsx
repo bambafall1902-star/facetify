@@ -52,7 +52,7 @@ export default function ProfilePage() {
       setSkinProfile(data)
     }
     load()
-  }, [])
+  }, [router])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
