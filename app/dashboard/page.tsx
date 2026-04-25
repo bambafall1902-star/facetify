@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/auth'
+import { createClient, signOut } from '@/lib/auth'
 
 const AI_TIPS = [
   { tip: "Dors plus tôt ce soir. Le cortisol du stress ralentit ta progression de 40%.", icon: "🌙" },
@@ -59,12 +59,10 @@ export default function DashboardPage() {
   const displayName = firstName ? firstName.charAt(0).toUpperCase() + firstName.slice(1) : 'toi'
 
   const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut()
+    const { error } = await signOut()
+    if (!error) {
       router.push('/login')
       router.refresh()
-    } catch (error) {
-      console.error('Erreur déconnexion:', error)
     }
   }
 
