@@ -59,8 +59,13 @@ export default function DashboardPage() {
   const displayName = firstName ? firstName.charAt(0).toUpperCase() + firstName.slice(1) : 'toi'
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
+    try {
+      await supabase.auth.signOut()
+      router.push('/login')
+      router.refresh()
+    } catch (error) {
+      console.error('Erreur déconnexion:', error)
+    }
   }
 
   const handleSlider = (e: React.MouseEvent<HTMLDivElement>) => {
