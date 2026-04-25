@@ -261,7 +261,7 @@ export default function ProgressPage() {
                 <div key={i} className="card" style={{ marginBottom: '10px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <p style={{ fontWeight: 700, fontSize: '0.88rem', color: '#1a1714' }}>{stat.label}</p>
-                    <div style={{ display: 'flex', align: 'center', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span style={{ fontSize: '0.72rem', color: '#8c8278', textDecoration: 'line-through' }}>{stat.start}%</span>
                       <span style={{ fontSize: '0.75rem', fontWeight: 700, color: stat.color }}>{stat.current}%</span>
                       <span style={{ fontSize: '0.7rem', color: '#7bbf8c', fontWeight: 700 }}>
