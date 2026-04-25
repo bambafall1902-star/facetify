@@ -36,17 +36,40 @@ export default function DashboardPage() {
   const [tipIndex] = useState(Math.floor(Math.random() * AI_TIPS.length))
   const [sliderPos, setSliderPos] = useState(50)
   const sliderRef = useRef<HTMLDivElement>(null)
-  const dayNumber = 18
-  const streak = 12
-  const skinScore = 78
+ const [dayNumber, setDayNumber] = useState(1)
+  const [streak, setStreak] = useState(0)
+  const [skinScore, setSkinScore] = useState(45)
   const router = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) router.push('/login')
-      else setUser(user)
+      if (!user) { router.push('/login'); return }
+      setUser(user)
+
+      const { data: progress } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+
+      if (!progress) {
+        await supabase.from('user_progress').insert({
+          user_id: user.id,
+          day_number: 1,
+          streak_count: 0,
+          skin_score: 45,
+          program_start_date: new Date().toISOString().split('T')[0]
+        })
+      } else {
+        const start = new Date(progress.program_start_date)
+        const today = new Date()
+        const diff = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+        setDayNumber(Math.min(30, diff))
+        setStreak(progress.streak_count ?? 0)
+        setSkinScore(progress.skin_score ?? 45)
+      }
     }
     getUser()
   }, [])
