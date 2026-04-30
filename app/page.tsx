@@ -164,7 +164,7 @@ export default function Home() {
           <li><a href="#how">Comment ça marche</a></li>
           <li><a href="#benefits">Bénéfices</a></li>
           <li><a href="#pricing">Tarifs</a></li>
-          <li><button className="btn-nav" onClick={() => router.push('/login')}>Commencer gratuitement</button></li>
+          <li><button className="btn-nav" onClick={() => router.push('/login')}>Obtenir ma routine personnalisée →</button></li>
         </ul>
       </nav>
 
@@ -178,7 +178,7 @@ export default function Home() {
           <button className="btn-primary" onClick={() => router.push('/login')}>Commencer gratuitement →</button>
           <a href="#how" className="btn-secondary">▶ Voir comment ça marche</a>
         </div>
-        <p className="hero-guarantee"><span>✓ 7 jours gratuits</span> — Sans carte bancaire requise</p>
+        <p className="hero-guarantee"><span>✓ Accès immédiat · 10€/mois</span> — Résiliable à tout moment</p>
       </section>
 
       {/* SOCIAL PROOF */}
