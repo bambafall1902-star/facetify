@@ -175,7 +175,7 @@ export default function Home() {
         <h1>Débarrasse-toi de ton acné<br />en <em>30 jours</em></h1>
         <p className="hero-sub">Une routine skincare personnalisée selon ta peau. Simple, efficace, et sans te noyer dans un océan de produits.</p>
         <div className="hero-cta">
-          <button className="btn-primary" onClick={() => router.push('/login')}>Commencer gratuitement →</button>
+          <button className="btn-primary" onClick={() => router.push('/login')}>Obtenir ma routine personnalisée →</button>
           <a href="#how" className="btn-secondary">▶ Voir comment ça marche</a>
         </div>
         <p className="hero-guarantee"><span>✓ Accès immédiat · 10€/mois</span> — Résiliable à tout moment</p>
